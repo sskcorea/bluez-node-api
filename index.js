@@ -27,3 +27,14 @@ bus.getService('org.bluez').getInterface(
 		console.log('PropertiesChanged', arguments);
 	});
 });
+
+bus.invoke( {
+	path:'/org/bluez/hci0',
+	destination: 'org.bluez',
+	'interface': 'org.bluez.Adapter1',
+	member: 'StartDiscovery',
+	type: dbus.messageType.methodCall
+}, function (err) {
+	if (err)
+		console.log(err);
+});
