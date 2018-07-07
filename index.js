@@ -1,5 +1,5 @@
 var dbus = require('dbus-native');
-var bus = dbus.sessionBus();
+var bus = dbus.systemBus();
 require('magic-globals');
 
 bus.getService('org.bluez').getInterface(
