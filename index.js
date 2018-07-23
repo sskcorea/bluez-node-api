@@ -6,15 +6,25 @@ bus.getService('org.bluez').getInterface(
 	'/',
 	'org.freedesktop.DBus.ObjectManager', function(err, itf) {
 
-	// console.log(itf);
-	
 	// dbus signals are EventEmitter events
 	itf.on('InterfacesAdded', function() {
-		console.log('InterfacesAdded', arguments);
-		console.log(arguments[0]);
+		// console.log('InterfacesAdded', arguments);
 		arguments[1].forEach(e1 => {
-			console.log(e1);
+			if (e1[0] === 'org.bluez.Device1') {
+				e1[1].forEach(e2 => {
+					if (e2[0] === 'ManufacturerData') {
+						console.log(e2[0] + ': ');
+						console.log(e2[1][1][0][0][1][1]);
+					} else if (e2[0] === 'ServiceData ') {
+						console.log(e2[0] + ': ');
+						console.log(e2[1][1][0][0][1][1]);
+					} else {
+						console.log(e2[0] + ': ' + e2[1][1]);
+					}
+				})
+			}
 		});
+		console.log();
 	});
 
 	itf.on('InterfacesRemoved', function() {
@@ -25,8 +35,6 @@ bus.getService('org.bluez').getInterface(
 bus.getService('org.bluez').getInterface(
 	'/org/bluez/hci0',
 	'org.freedesktop.DBus.Properties', function(err, itf) {
-
-	// console.log(itf);
 
 	itf.on('PropertiesChanged', function() {
 		// console.log('PropertiesChanged', arguments);
