@@ -1,6 +1,11 @@
 var api = require('../index');
 
-api.scan(function (d) {
+api.scan('on', function (d, e) {
+	if (e) {
+		console.log(e);
+		return;
+	}
+
 	d.forEach(e1 => {
 		if (e1[0] === 'org.bluez.Device1') {
 			e1[1].forEach(e2 => {
@@ -17,4 +22,6 @@ api.scan(function (d) {
 		}
 	});
 	console.log();
+
+	api.scan('off');
 });

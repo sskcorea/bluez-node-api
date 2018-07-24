@@ -30,17 +30,24 @@ bus.getService('org.bluez').getInterface(
 	});
 });
 
-module.exports.scan = function(cb) {
-	user_cb = cb;
+module.exports.scan = function(onoff, cb) {
+	var m;
+	if (onoff === 'on') {
+		m = 'StartDiscovery';
+		user_cb = cb;
+	} else {
+		m = 'StopDiscovery';
+		user_cb = null;
+	}
 
 	bus.invoke( {
 		path:'/org/bluez/hci0',
 		destination: 'org.bluez',
 		'interface': 'org.bluez.Adapter1',
-		member: 'StartDiscovery',
+		member: m,
 		type: dbus.messageType.methodCall
 	}, function (err) {
 		if (err)
-			console.log(err);
+			cb(null, err);
 	});
 };
