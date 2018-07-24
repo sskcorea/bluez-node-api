@@ -1,6 +1,7 @@
-var api = require('../index');
+var API = require('../index');
+var bt = new API();
 
-api.scan('on', function (d, e) {
+bt.scan('on', function (d, e) {
 	if (e) {
 		console.log(e);
 		return;
