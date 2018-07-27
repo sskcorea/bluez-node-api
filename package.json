@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "dbus-native": "^0.2.5",
-    "magic-globals": "^0.9.1"
+    "dbus": "^1.0.3"
   },
   "devDependencies": {
     "mocha": "^5.2.0"
