@@ -1,40 +1,97 @@
 var DBus = require('dbus');
 var bus = DBus.getBus('system');
-var user_cb;
 
-var API = module.exports = function () {
+var API = module.exports = function (cb) {
+
 	bus.getInterface('org.bluez', '/org/bluez/hci0', 'org.freedesktop.DBus.Properties', function(err, iface) {
-		if (err)
-			console.log(err);
-
 		iface.on('PropertiesChanged', function(count) {
-			console.log(arguments);
+			// console.log(arguments);
+			if (arguments[1].hasOwnProperty('Discovering')) {
+				cb({name: 'PropertiesChanged', property: 'Discovering', data: arguments[1]['Discovering']});
+			}
 		});
 	});
 
 	bus.getInterface('org.bluez', '/', 'org.freedesktop.DBus.ObjectManager', function(err, iface) {
-		itf_objectmanager = iface;
-		itf_objectmanager.on('InterfacesAdded', function(count) {
-			if (user_cb)
-				user_cb(arguments[1]['org.bluez.Device1']);
+		iface.on('InterfacesAdded', function(count) {
+			// console.log('InterfaceAdded');
+			// console.log(arguments);
+
+			if (arguments[1].hasOwnProperty('org.bluez.Device1')) {
+				bus.getInterface('org.bluez', arguments[0], 'org.freedesktop.DBus.Properties', (err, iface) => {
+					iface.on('PropertiesChanged', function(count) {
+						console.log(arguments[0] + ' PropertiesChanged');
+						console.log(arguments);
+						if (arguments[1].hasOwnProperty('Paired')) {
+							cb({name: 'PropertiesChanged', property: 'Paired', data: arguments[1]['Paired']});
+						}
+					});
+				});
+				cb({name: 'InterfacesAdded', property: 'org.bluez.Device1', data: arguments[1]['org.bluez.Device1']});
+			} else if (arguments[1].hasOwnProperty('org.bluez.MediaControl1')) {
+				cb({name: 'InterfacesAdded', property: 'org.bluez.MediaControl1', data: arguments[1]['org.bluez.MediaControl1']});
+			} else if (arguments[1].hasOwnProperty('org.bluez.MediaTransport1')) {
+				cb({name: 'InterfacesAdded', property: 'org.bluez.MediaTransport1', data: arguments[1]['org.bluez.MediaTransport1']});
+			} else if (arguments[1].hasOwnProperty('org.bluez.MediaPlayer1')) {
+				cb({name: 'InterfacesAdded', property: 'org.bluez.MediaPlayer1', data: arguments[1]['org.bluez.MediaPlayer1']});
+			}
 		});
 
-		itf_objectmanager.on('InterfacesRemoved', function(count) {
-			console.log(arguments[1]['org.bluez.Device1'].Address);
+		iface.on('InterfacesRemoved', function(count) {
+			// console.log('InterfaceRemoved');
+			// console.log(arguments);
 		});
 	});
 }
 
-API.prototype.scan = function(onoff, cb) {
+addr2path = function(addr) {
+	var path='dev';
+
+	addr.split(":").forEach(e => { path += '_' + e; });
+
+	return path;
+};
+
+API.prototype.get_managed_objs = function(addr, cb) {
+	var p = '/org/bluez/hci0/' + addr2path(addr);
+
+	bus.getInterface('org.bluez', '/', 'org.freedesktop.DBus.ObjectManager', function(err, iface) {
+		iface.GetManagedObjects( function(err) {
+			arguments[1][p];
+		});
+	});
+};
+
+API.prototype.pair = function(addr) {
+	var p = '/org/bluez/hci0/' + addr2path(addr);
+
+	bus.getInterface('org.bluez', p, 'org.bluez.Device1', function(err, iface) {
+		iface.Pair( function(err) {
+			if (err) throw err;
+			console.log('Pair');
+		});
+	});
+};
+
+API.prototype.connect = function(addr) {
+	var p = '/org/bluez/hci0/' + addr2path(addr);
+
+	bus.getInterface('org.bluez', p, 'org.bluez.Device1', function(err, iface) {
+		iface.Connect( function(err) {
+			if (err) throw err;
+			console.log('Connect');
+		});
+	});
+};
+
+API.prototype.scan = function(onoff) {
 	if (onoff === 'on') {
-		user_cb = cb;
 		bus.getInterface('org.bluez', '/org/bluez/hci0', 'org.bluez.Adapter1', function(err, iface) {
 			iface.StartDiscovery({}, function(err) {
 				console.log('StartDiscovery');
 			});
 		});
 	} else if (onoff === 'off') {
-		user_cb = null;
 		bus.getInterface('org.bluez', '/org/bluez/hci0', 'org.bluez.Adapter1', function(err, iface) {
 			iface.StopDiscovery({}, function(err) {
 				console.log('StopDiscovery');
