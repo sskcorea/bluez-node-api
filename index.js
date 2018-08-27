@@ -1,5 +1,6 @@
 var DBus = require('dbus');
 var bus = DBus.getBus('system');
+
 const Properties = 'org.freedesktop.DBus.Properties';
 const ObjectManager = 'org.freedesktop.DBus.ObjectManager';
 const Device1 = 'org.bluez.Device1';
@@ -8,6 +9,8 @@ const MediaControl1 = 'org.bluez.MediaControl1';
 const MediaTransport1 = 'org.bluez.MediaTransport1';
 const MediaPlayer1 = 'org.bluez.MediaPlayer1';
 const LEAdvertisingManager1 = 'org.bluez.LEAdvertisingManager1';
+const AgentManager1 = 'org.bluez.AgentManager1';
+const Agent1 = 'org.bluez.Agent1';
 
 var API = module.exports = function (cb) {
 
@@ -124,6 +127,55 @@ API.prototype.discoverable = function(onoff, cb) {
 		});
 	}
 };
+
+API.prototype.agent = function(cb) {
+	var service = DBus.registerService('system', 'org.bluez');
+	var obj = service.createObject('/bluenode/agent');
+	var iface1 = obj.createInterface(Agent1);
+
+	iface1.addMethod('Release', {}, function(callback) {
+		console.log('Release');
+	});
+
+	iface1.addMethod('RequestPinCode', { in: ['o'], out: ['s'] }, function(callback) {
+		console.log('RequestPinCode');
+	});
+
+	iface1.addMethod('DisplayPinCode', { in: ['o'], out: ['s'] }, function(callback) {
+		console.log('DisplayPinCode');
+	});
+
+	iface1.addMethod('RequestPasskey', { in: ['o'], out: ['u'] }, function(callback) {
+		console.log('RequestPasskey');
+	});
+
+	iface1.addMethod('DisplayPasskey', { in: ['o'], out: ['u', 'q'] }, function(callback) {
+		console.log('DisplayPasskey');
+	});
+
+	iface1.addMethod('RequestConfirmation', { in: ['o'], out: ['u'] }, function(callback) {
+		console.log('RequestConfirmation');
+	});
+
+	iface1.addMethod('RequestAuthorization', { in: ['o']}, function(callback) {
+		console.log('RequestAuthorization');
+	});
+
+	iface1.addMethod('AuthorizeService', { in: ['o'], out: ['s'] }, function(callback) {
+		console.log('AuthorizeService');
+	});
+
+	iface1.addMethod('Cancel', {}, function(callback) {
+		console.log('Cancel');
+	});
+
+	bus.getInterface('org.bluez', '/org/bluez', AgentManager1, function(err, iface) {
+		if (err) throw err;
+		iface.RegisterAgent('/bluenode/agent', 'KeyboardDisplay', function() {
+			console.log('RegisterAgent');
+		});
+	});
+}
 
 API.prototype.adv = function(onoff, cb) {
 	if (onoff === 'on') {
