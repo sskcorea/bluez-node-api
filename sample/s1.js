@@ -6,7 +6,7 @@ readline.emitKeypressEvents(process.stdin);
 
 var bt = new API( function(evt) {
 	if (evt.name === 'PropertiesChanged' && evt.property === 'Discovering') {
-
+		console.log(evt.data);
 	} else if (evt.name === 'PropertiesChanged' && evt.property === 'Paired') {
 		// console.log(evt.data.Paired);
 		bt.connect(target_addr);

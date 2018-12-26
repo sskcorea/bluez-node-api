@@ -16,7 +16,7 @@ var API = module.exports = function (cb) {
 
 	bus.getInterface('org.bluez', '/org/bluez/hci0', Properties, function(err, iface) {
 		iface.on('PropertiesChanged', function(count) {
-			// console.log(arguments);
+			console.log(arguments);
 			if (arguments[1].hasOwnProperty('Discovering')) {
 				cb({name: 'PropertiesChanged', property: 'Discovering', data: arguments[1]['Discovering']});
 			}
@@ -25,14 +25,16 @@ var API = module.exports = function (cb) {
 
 	bus.getInterface('org.bluez', '/', ObjectManager, function(err, iface) {
 		iface.on('InterfacesAdded', function(count) {
-			// console.log('InterfaceAdded');
+			console.log('InterfaceAdded');
 			// console.log(arguments);
 
 			if (arguments[1].hasOwnProperty(Device1)) {
+				cb({name: 'PropertiesChanged', property: 'Discovering', data: arguments[1][Device1]});
+
 				bus.getInterface('org.bluez', arguments[0], Properties, (err, iface) => {
 					iface.on('PropertiesChanged', function(count) {
-						console.log(arguments[0] + ' PropertiesChanged');
-						console.log(arguments);
+						// console.log(arguments[0] + ' PropertiesChanged');
+						// console.log(arguments);
 						if (arguments[1].hasOwnProperty('Paired')) {
 							cb({name: 'PropertiesChanged', property: 'Paired', data: arguments[1]['Paired']});
 						}
